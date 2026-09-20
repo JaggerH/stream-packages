@@ -20,6 +20,13 @@ const pkg = JSON.parse(readFileSync(join(pkgDir, 'package.json'), 'utf8'))
 const ALLOWED = ['README.md', 'dist/index.js', 'package.json']
 const problems = []
 
+// 清单本身要过 Stream 安装门的第一关：`stream.id` 必填，`stream.capability` 只认这一个字面量。
+// 缺 id 的包 `npm pack` / 本地测试全绿，装的时候在解描述符那一步就被拒。
+if (!pkg.stream?.id) problems.push('package.json#stream.id 缺席——Stream 安装门解描述符第一步就拒')
+if (pkg.stream?.capability !== 'dist/index.js') {
+  problems.push(`package.json#stream.capability 是 ${JSON.stringify(pkg.stream?.capability)}，Stream 只认 "dist/index.js"`)
+}
+
 const entry = join(pkgDir, 'dist', 'index.js')
 if (!existsSync(entry) || statSync(entry).size === 0) {
   problems.push('dist/index.js 不存在或是空文件——先 `npm run bundle`')
