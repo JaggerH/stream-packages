@@ -1,0 +1,13 @@
+# ddddocr 自带 ONNX 权重（打在 wheel 里），所以这一份没有模型下载步骤，也没有 fetch-model.sh。
+#
+# 版本都钉死：这个容器的产出会被直接填进表单去操作站点，"升级一下依赖"改变的是**同一张图读出
+# 什么字**——那种变化没有任何测试会喊。要动版本就重新验一轮真实验证码。
+ddddocr==1.5.6
+# ddddocr 1.5.x 不跟 numpy 2.x 兼容（onnxruntime 侧的 ABI），不钉的话 pip 会装 2.x 然后在
+# import 期炸；而那个错读起来完全不像"版本不对"。
+numpy==1.26.4
+onnxruntime==1.17.3
+Pillow==10.3.0
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+pydantic==2.7.4

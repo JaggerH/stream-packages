@@ -9,7 +9,7 @@ on:
     paths: ['*/Dockerfile', '*/app.py', '*/requirements.txt', '*/package.json']
   workflow_dispatch:
     inputs:
-      package: { description: '目录名（dewatermark / mineru / voiceprint）', required: true }
+      package: { description: '目录名（ddddocr / dewatermark / mineru / voiceprint）', required: true }
       version: { description: '版本（如 1.0.0）', required: true }
 
 concurrency:

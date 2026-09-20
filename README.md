@@ -1,10 +1,11 @@
 # stream-packages
 
 Stream 可选包的家：**每个目录 = 一个容器镜像 + 一份 Stream 包清单**。这些包只提供一个后端容器
-（去水印 / 文档解析 / 说话人分离），不带 Source、不带凭证；用户按需装，不装的人不为它付任何代价。
+（验证码识别 / 去水印 / 文档解析 / 说话人分离），不带 Source、不带凭证；用户按需装，不装的人不为它付任何代价。
 
 | 目录 | npm | 镜像 | GPU |
 |---|---|---|---|
+| `ddddocr/` | `@streamapp/ddddocr` | `ghcr.io/jaggerh/ddddocr-server` | 否 |
 | `dewatermark/` | `@streamapp/dewatermark` | `ghcr.io/jaggerh/dewatermark` | 否 |
 | `mineru/` | `@streamapp/mineru` | `ghcr.io/jaggerh/mineru-server` | 是 |
 | `voiceprint/` | `@streamapp/voiceprint` | `ghcr.io/jaggerh/voiceprint-server` | 是（仅 GPU） |
