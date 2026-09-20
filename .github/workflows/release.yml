@@ -1,15 +1,16 @@
-# 每个目录 = 一个镜像 + 一份 Stream 包清单。tag `<dir>-v<版本>` 同时锁定两者：
-# 构建并推 ghcr 镜像（:<版本> 与 :latest），再 npm publish 那个目录（版本已在 npm 上则跳过，
-# 所以 tag 可以重打）。PR / 非 tag push 只 build 不 push、不发。
+# 每个目录 = 一份 Stream 包清单，外加一个镜像（容器包）或一份 tsdown 产物（代码包）。
+# tag `<dir>-v<版本>` 锁定整个目录：容器包构建并推 ghcr 镜像（:<版本> 与 :latest），代码包
+# `npm ci && npm run bundle`；然后 npm publish 那个目录（版本已在 npm 上则跳过，所以 tag 可以重打）。
+# 容器包还是代码包按 `package.json#stream.backend` 在不在判，不另列名单。PR / 非 tag push 只 build 不 push、不发。
 name: release
 on:
   push:
     tags: ['*-v*']
   pull_request:
-    paths: ['*/Dockerfile', '*/app.py', '*/requirements.txt', '*/package.json']
+    paths: ['*/Dockerfile', '*/app.py', '*/requirements.txt', '*/package.json', '*/src/**', 'sdk/**']
   workflow_dispatch:
     inputs:
-      package: { description: '目录名（ddddocr / dewatermark / mineru / voiceprint）', required: true }
+      package: { description: '目录名（ddddocr / dewatermark / mineru / voiceprint / meituan）', required: true }
       version: { description: '版本（如 1.0.0）', required: true }
 
 concurrency:
@@ -23,6 +24,7 @@ jobs:
       package: ${{ steps.r.outputs.package }}
       version: ${{ steps.r.outputs.version }}
       publish: ${{ steps.r.outputs.publish }}
+      has_backend: ${{ steps.kind.outputs.has_backend }}
     steps:
       - id: r
         run: |
@@ -33,17 +35,22 @@ jobs:
           else
             echo package=dewatermark >> $GITHUB_OUTPUT; echo version=0.0.0-pr >> $GITHUB_OUTPUT; echo publish=false >> $GITHUB_OUTPUT
           fi
+      - uses: actions/checkout@v4
+      - name: 清单版本必须等于 tag 版本（一个 tag 锁定整个目录，对不上就别发）
+        if: steps.r.outputs.publish == 'true'
+        run: |
+          v=$(node -p "require('./${{ steps.r.outputs.package }}/package.json').version")
+          [ "$v" = "${{ steps.r.outputs.version }}" ] || { echo "package.json version $v != tag ${{ steps.r.outputs.version }}"; exit 1; }
+      - name: 容器包还是代码包——只看清单里有没有 stream.backend
+        id: kind
+        run: echo "has_backend=$(node -p "!!require('./${{ steps.r.outputs.package }}/package.json').stream.backend")" >> $GITHUB_OUTPUT
   image:
     needs: resolve
+    if: needs.resolve.outputs.has_backend == 'true'
     runs-on: ubuntu-latest
     permissions: { contents: read, packages: write }
     steps:
       - uses: actions/checkout@v4
-      - name: 清单版本必须等于 tag 版本（一个 tag 锁定两者，对不上就别发）
-        if: needs.resolve.outputs.publish == 'true'
-        run: |
-          v=$(node -p "require('./${{ needs.resolve.outputs.package }}/package.json').version")
-          [ "$v" = "${{ needs.resolve.outputs.version }}" ] || { echo "package.json version $v != tag ${{ needs.resolve.outputs.version }}"; exit 1; }
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         if: needs.resolve.outputs.publish == 'true'
@@ -63,14 +70,35 @@ jobs:
             ${{ steps.img.outputs.name }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+  # 代码包（无 stream.backend）：typecheck + 测试 + tsdown 出 dist/index.js。产物不用传给 npm job，
+  # 那边重新 bundle 一次（确定性构建，秒级）——省掉 artifact 上传/下载那一段。
+  bundle:
+    needs: resolve
+    if: needs.resolve.outputs.has_backend == 'false'
+    runs-on: ubuntu-latest
+    env:
+      PKG: ${{ needs.resolve.outputs.package }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: cd $PKG && npm ci
+      - run: cd $PKG && npm run typecheck
+      - run: cd $PKG && npx vitest run src
+      - run: cd $PKG && npm run bundle
+      - run: cd $PKG && node ../scripts/assert-npm-artifact.mjs
   npm:
-    needs: [resolve, image]
-    if: needs.resolve.outputs.publish == 'true'
+    needs: [resolve, image, bundle]
+    # image / bundle 二选一会被 skip；always() 让本 job 不被那个 skip 连坐，再逐个核结果。
+    if: always() && needs.resolve.outputs.publish == 'true' && needs.resolve.result == 'success' && needs.image.result != 'failure' && needs.image.result != 'cancelled' && needs.bundle.result != 'failure' && needs.bundle.result != 'cancelled'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22, registry-url: 'https://registry.npmjs.org' }
+      - name: 代码包先出产物（prepack 闸会核它）
+        if: needs.resolve.outputs.has_backend == 'false'
+        run: cd ${{ needs.resolve.outputs.package }} && npm ci && npm run bundle
       - name: 已发布的版本跳过（tag 重打不炸）
         id: has
         run: |

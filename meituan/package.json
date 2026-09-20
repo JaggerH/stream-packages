@@ -1,0 +1,51 @@
+{
+  "name": "@streamapp/meituan",
+  "version": "0.2.0",
+  "description": "Stream capability package: Meituan coupons / nearby group-buy search / ordering through Meituan's own official agent CLI (the one it ships for WorkBuddy), materialized from Meituan's public bucket and pinned by hash",
+  "type": "module",
+  "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "//stream": [
+    "这个包填 Stream 包的**能力槽位**：`stream add @streamapp/meituan` 把它装进",
+    "`<dataDir>/recipes/@streamapp__meituan/`，Stream 后端按 `capability` 这一格动态 import",
+    "`dist/index.js`、取它导出的 `capability` 挂上（stream 仓库 `src/capabilities/load.ts`）。",
+    "路径只认 `dist/index.js` 这一个字面量——安装门的 tarball 白名单只放行 `package.json` /",
+    "`README.md` / `dist/index.js`，所以产物必须自包含（这个包没有运行时依赖，`dist/index.js`",
+    "一个文件就是全部）。宿主契约类型从本仓库 `sdk/capability/` 取（stream `shared/capability/` 的拷贝）。",
+    "**没有 `credentials`**：它不借浏览器登录态，登录走美团官方 CLI 自己那套扫码，",
+    "凭证落在它自己的 homeDir 里（`src/cli.ts`）。"
+  ],
+  "stream": {
+    "id": "meituan",
+    "capability": "dist/index.js"
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "prepack": "node ../scripts/assert-npm-artifact.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsdown": "^0.9.9",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  },
+  "files": [
+    "package.json",
+    "README.md",
+    "dist"
+  ],
+  "//links": [
+    "README.md 必须**自包含**：不要往里加指回 stream 仓库 docs/ 的相对链接（装了包的人打不开）。",
+    "闸在 `../scripts/assert-npm-artifact.mjs`。"
+  ],
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/JaggerH/stream-packages", "directory": "meituan" },
+  "publishConfig": {
+    "access": "public"
+  }
+}
