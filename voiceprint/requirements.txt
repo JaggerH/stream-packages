@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+python-multipart
+# +cuda build off k2-fsa's find-links index (see Dockerfile) — links CUDA 11 / cuDNN 8.
+sherpa-onnx==1.13.4+cuda
+# CUDA 11 runtime libs as pip wheels (matches the +cuda wheel's ELF NEEDED set; libcuda.so
+# itself comes from the host driver via --gpus). cu11 family on purpose — NOT cu12.
+nvidia-cuda-runtime-cu11
+nvidia-cublas-cu11
+nvidia-cudnn-cu11==8.*
+nvidia-cufft-cu11
+nvidia-curand-cu11
+numpy
+soundfile

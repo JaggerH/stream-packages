@@ -1,0 +1,23 @@
+{
+  "name": "@streamapp/dewatermark",
+  "version": "1.0.0",
+  "description": "Stream 可选包：豆包等站点生图结果的去水印容器（用户 stream add 装，宿主建容器、standby 管生灭）",
+  "type": "module",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/JaggerH/stream-packages", "directory": "dewatermark" },
+  "files": ["package.json", "README.md"],
+  "stream": {
+    "id": "dewatermark",
+    "name": "去水印",
+    "tagline": "把角落里的平台水印标补掉",
+    "description": "一张图进、一张图出：在四个角找平台的 AI 水印标（模板匹配），用 LaMa 把那一块补成周围的样子。给 `/api/doubao/v1/images/generations` 那条路用（豆包网页版预览图左上角的「AI 生成」）。CPU 就够，2048² 一张约 3–6s，闲置十分钟自动回收。",
+    "backend": {
+      "image": "ghcr.io/jaggerh/dewatermark:latest",
+      "port": 80,
+      "health": "/health",
+      "gpu": false,
+      "mem": "3G",
+      "standby": { "idleMinutes": 10 }
+    }
+  }
+}

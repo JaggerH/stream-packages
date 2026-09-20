@@ -1,0 +1,9 @@
+faster-whisper
+# CTranslate2 (faster-whisper's GPU backend) needs cuDNN 9 + cuBLAS for CUDA 12. Ship them as
+# pip wheels instead of a heavy nvidia/cuda base image — smaller, per-file-retryable downloads,
+# and libcuda.so itself comes from the host driver at runtime (--gpus; WSL: /usr/lib/wsl/lib).
+nvidia-cublas-cu12
+nvidia-cudnn-cu12==9.*
+fastapi
+uvicorn[standard]
+python-multipart

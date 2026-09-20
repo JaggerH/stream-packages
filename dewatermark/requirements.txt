@@ -1,0 +1,6 @@
+# iopaint 自己钉死 fastapi / uvicorn / python-multipart / Pillow / opencv 的版本（1.6.0 要
+# fastapi==0.108.0），这里**不再另钉**，否则解不开。只钉 torch（走 cpu wheel 源）和 iopaint。
+torch==2.4.1
+torchvision==0.19.1
+iopaint==1.6.0
+numpy<2
