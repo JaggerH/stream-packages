@@ -14,7 +14,9 @@ on:
       version: { description: '版本（如 1.0.0）', required: true }
 
 concurrency:
-  group: release-${{ github.ref }}
+  # 按「目录」分组，不按 ref：workflow_dispatch 的 ref 全是 main，四个包一起 dispatch 会被同组的
+  # 「只留一个排队」规则砍掉两个（撞过：1.0.1 那次 4 发 2 取消）。同一个包的两次发布仍然串行。
+  group: release-${{ inputs.package || github.ref_name }}
   cancel-in-progress: false
 
 jobs:
