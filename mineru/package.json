@@ -1,25 +1,39 @@
 {
   "name": "@streamapp/mineru",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Stream 可选包：MinerU 文档 / 图片 → Markdown 容器（用户 stream add 装，宿主建容器、standby 管生灭；GPU）",
   "type": "module",
   "license": "MIT",
-  "repository": { "type": "git", "url": "https://github.com/JaggerH/stream-packages", "directory": "mineru" },
-  "files": ["package.json", "README.md"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JaggerH/stream-packages",
+    "directory": "mineru"
+  },
+  "files": [
+    "package.json",
+    "README.md"
+  ],
   "stream": {
     "id": "mineru",
     "name": "MinerU",
     "tagline": "文档 / 图片 → Markdown",
     "description": "把 PDF、扫描件、图片转成 Markdown：版面还原、表格转成 HTML、公式转成 LaTeX。取正文那条链路上负责「这份东西不是文字，是一张纸」的那一档。本机容器免费但慢（吃 GPU 更快），配了 mineru_url 就走云端快车道——两边跑的是同一个模型，云端卖的是速度不是效果。",
     "backend": {
-      "image": "ghcr.io/jaggerh/mineru-server:latest",
+      "image": "ghcr.io/jaggerh/mineru-server:1.0.1",
       "port": 80,
       "health": "/health",
       "gpu": true,
-      "env": { "MINERU_DEVICE": "auto" },
-      "volumes": ["mineru-cache:/root/.cache"],
+      "env": {
+        "MINERU_DEVICE": "auto"
+      },
+      "volumes": [
+        "mineru-cache:/root/.cache"
+      ],
       "mem": "10G",
-      "standby": { "idleMinutes": 10, "startTimeoutSeconds": 120 }
+      "standby": {
+        "idleMinutes": 10,
+        "startTimeoutSeconds": 120
+      }
     }
   }
 }

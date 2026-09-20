@@ -1,18 +1,25 @@
 {
   "name": "@streamapp/voiceprint",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Stream 可选包：sherpa-onnx 说话人分离 + 声纹识别容器（用户 stream add 装，宿主建容器、standby 管生灭；仅 GPU）",
   "type": "module",
   "license": "MIT",
-  "repository": { "type": "git", "url": "https://github.com/JaggerH/stream-packages", "directory": "voiceprint" },
-  "files": ["package.json", "README.md"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JaggerH/stream-packages",
+    "directory": "voiceprint"
+  },
+  "files": [
+    "package.json",
+    "README.md"
+  ],
   "stream": {
     "id": "voiceprint",
     "name": "Diarization",
     "tagline": "分离说话人 + 认出是谁",
     "description": "把一段音频切成「谁在什么时候说话」，再把每个人的嗓音转成一串数字存进声纹库——认过一次，以后在别的节目里再遇到同一个人也能认出来。用来做「只听某个人说的部分」。只出 GPU 版：没有显卡的机器起不了它（CPU 上跑两小时的综艺要花近两小时，功能本身就没意义了）。",
     "backend": {
-      "image": "ghcr.io/jaggerh/voiceprint-server:latest",
+      "image": "ghcr.io/jaggerh/voiceprint-server:1.0.1",
       "port": 80,
       "health": "/health",
       "gpu": true,
@@ -22,9 +29,13 @@
         "VOICEPRINT_MODEL_VERSION": "sherpa-eres2netv2-zhcn-192-v1",
         "VOICEPRINT_DFN": "1"
       },
-      "volumes": ["voiceprint-cache:/root/.cache"],
+      "volumes": [
+        "voiceprint-cache:/root/.cache"
+      ],
       "mem": "4G",
-      "standby": { "idleMinutes": 10 }
+      "standby": {
+        "idleMinutes": 10
+      }
     }
   }
 }

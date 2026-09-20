@@ -41,6 +41,12 @@ jobs:
         run: |
           v=$(node -p "require('./${{ steps.r.outputs.package }}/package.json').version")
           [ "$v" = "${{ steps.r.outputs.version }}" ] || { echo "package.json version $v != tag ${{ steps.r.outputs.version }}"; exit 1; }
+      - name: 容器包的 image 必须钉 :<包版本>——Stream 安装门拒浮动 tag，stream update 靠换 tag 让宿主重建容器
+        if: steps.r.outputs.publish == 'true'
+        run: |
+          img=$(node -p "require('./${{ steps.r.outputs.package }}/package.json').stream.backend?.image ?? ''")
+          [ -z "$img" ] && exit 0
+          [ "${img##*:}" = "${{ steps.r.outputs.version }}" ] || { echo "stream.backend.image '$img' 的 tag 不是包版本 ${{ steps.r.outputs.version }}"; exit 1; }
       - name: 容器包还是代码包——只看清单里有没有 stream.backend
         id: kind
         run: echo "has_backend=$(node -p "!!require('./${{ steps.r.outputs.package }}/package.json').stream.backend")" >> $GITHUB_OUTPUT
@@ -107,4 +113,12 @@ jobs:
       - if: steps.has.outputs.skip == 'false'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: cd ${{ needs.resolve.outputs.package }} && npm publish --access public
+        # 人工先发、CI 后到时会撞 403/409「已发布」——registry 的 npm view 有 CDN 滞后，上一步的 skip 判断
+        # 可能没看到。发失败就等 30s 再问一次那个精确版本：在了就是成功，不在才算真失败。
+        run: |
+          cd ${{ needs.resolve.outputs.package }}
+          n=$(node -p "require('./package.json').name")
+          npm publish --access public && exit 0
+          sleep 30
+          npm view "$n@${{ needs.resolve.outputs.version }}" version >/dev/null 2>&1 && { echo "已在 npm 上（别处先发的），算成功"; exit 0; }
+          exit 1

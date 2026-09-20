@@ -35,7 +35,8 @@ Stream 可选包的家：**每个目录 = 一份 Stream 包清单 + 它填的那
 一个 tag 锁定整个目录：
 
 ```bash
-# 先把 <dir>/package.json 的 version 改成目标版本并提交（workflow 会核对，对不上就拒发）
+# 先把 <dir>/package.json 的 version 改成目标版本；容器包还要把 stream.backend.image 的 tag 改成同一个版本
+# （Stream 安装门拒 :latest——stream update 靠换 tag 让宿主重建容器）。workflow 两处都核，对不上就拒发。
 git tag dewatermark-v1.0.1 && git push --tags
 ```
 

@@ -1,23 +1,32 @@
 {
   "name": "@streamapp/ddddocr",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Stream 可选包：验证码 / 小块图片文字识别容器，给 recipe 的 call 步骤当外部工具（用户 stream add 装，宿主建容器、standby 管生灭）",
   "type": "module",
   "license": "MIT",
-  "repository": { "type": "git", "url": "https://github.com/JaggerH/stream-packages", "directory": "ddddocr" },
-  "files": ["package.json", "README.md"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JaggerH/stream-packages",
+    "directory": "ddddocr"
+  },
+  "files": [
+    "package.json",
+    "README.md"
+  ],
   "stream": {
     "id": "ddddocr",
     "name": "验证码识别",
     "tagline": "认一张图上的几个字",
     "description": "把一张图片上的字符读出来。给 recipe 的 `call` 步骤当外部工具用——recipe 走到需要认图的那一步（最常见的是登录页的图形验证码）就把那一小块截图送过来，拿回一串字符继续往下填。CPU 就够，模型几 MB、一次调用约 20ms，闲置十分钟自动回收。",
     "backend": {
-      "image": "ghcr.io/jaggerh/ddddocr-server:latest",
+      "image": "ghcr.io/jaggerh/ddddocr-server:1.0.1",
       "port": 80,
       "health": "/health",
       "gpu": false,
       "mem": "1G",
-      "standby": { "idleMinutes": 10 }
+      "standby": {
+        "idleMinutes": 10
+      }
     }
   }
 }
